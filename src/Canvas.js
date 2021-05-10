@@ -24,6 +24,14 @@ export class Canvas {
     this.id = id;
   }
 
+  getCanvasElement() {
+    return this.canvas;
+  }
+
+  getContext() {
+    return this.ctx;
+  }
+
   clearCanvas() {
     this.ctx.clearRect(0, 0, this.width, this.height);
   }
@@ -105,6 +113,10 @@ export class Vector2i {
   constructor(x, y) {
     this.x = x;
     this.y = y;
+  }
+
+  toPoint(){
+    return new Point(this.x, this.y);
   }
 
   isEqual(vector) {
@@ -218,24 +230,67 @@ export class Vector2i {
   //a.b = |a||b|cos(theta) =>
   //theta represents the angle between the two given vectors
 
-  getAngleBetweenVector(vector) {
-    let angle = Math.acos(this.getMagnitude * vector.getMagnitude);
+  getAngleBetweenVector(vector, inRadian) {
+    let angle = Math.acos(
+      this.getDotProduct(vector) / (this.getMagnitude * vector.getMagnitude)
+    );
+
+    if (inRadian) return angle;
+    else return toDegree(angle);
   }
 
   getProjectionVector(vector) {
-    let scale = this.getDotProduct(vector) / this.getMagnitudeSquare;
-
-    return vector.getScaledVector(scale);
+    let dotProdcut = this.getDotProduct(vector) / vector.getMagnitudeSquare();
+    return vector.getScaledVector(dotProdcut);
   }
+
+  getReflectionVector(normal) {
+    let projectVector = this.getProjectionVector(normal);
+    console.log(projectVector);
+    projectVector.scaleVector(2);
+    console.log(projectVector);
+    // return this.getSubtractionVector(projectVector);
+    return projectVector.getSubtractionVector(this);
+  }
+
+  getNormal(antiClockwise) {
+    if(antiClockwise){
+      return new Vector2i(-1*this.y, this.x)
+    }
+    return new Vector2i(this.y, -1* this.x);
+  }
+
+  translate(vec) {
+    this.addVector(vec);
+  }
+
+  reflectX() {
+    this.y = -this.y;
+  }
+
+  reflectY() {
+    this.x = -this.x;
+  } 
 }
 
-//--- Angle Utility function
+//--- Angle Utility functions
 export function toRadian(angle) {
   return angle * 0.0174533;
 }
 
 export function toDegree(angle) {
   return angle * 57.295754;
+}
+
+//--- Text
+export function drawText(ctx, text, x, y, color, font, align){
+  if(color)
+    ctx.fillStyle = color;
+  if(font)
+    ctx.font = font;
+  if(align)
+    ctx.textAlign = align;
+  ctx.fillText(text, x, y);
 }
 
 //--- Points
@@ -245,14 +300,29 @@ export function toDegree(angle) {
  * Has a draw function
  */
 export class Point {
-  constructor(x, y) {
+  constructor(x, y, size,color) {
     this.x = x;
     this.y = y;
+    this.size = 1;
+    if(size) {
+      this.size = size;
+    }
+    this.color = "black";
+    if(color) {
+      this.color = color;
+    }
   }
 
   draw(context, color, size) {
-    context.fillStyle = color;
+    if(!color) {
+      color = this.color;
+    }
 
+    if(!size) {
+      size = this.size;
+    }
+    
+    context.fillStyle = color;
     if (size > 1) {
       context.beginPath();
       context.arc(this.x, this.y, size, 0, 2 * Math.PI);
@@ -260,6 +330,10 @@ export class Point {
     } else {
       context.fillRect(this.x, this.y, 1, 1);
     }
+  }
+
+  toVector() {
+    return new Vector2i(this.x, this.y);
   }
 }
 
@@ -477,8 +551,8 @@ Tiles.generateTileArray = function (rows, columns, tileSize) {
 };
 
 /**
- * This gives the cell number calcuated going from left to right and returning to leftmost column for next row.
- * row and column are not origin points of the rectangle representing the tile but actual row and column number.
+ * This gives the cell number calculated going from left to right and returning to leftmost column for next row.
+ * Row and Column are not origin points of the rectangle representing the tile but actual row and column number.
  * @param {number} row
  * @param {number} column
  * @param {number} totalColumns
@@ -515,7 +589,7 @@ Tiles.getColumn = function (cellNumber, totalColumns) {
 };
 
 /**
- * Draw a single tile at from the Tile image to the screen.
+ * Draw a single tile at given position from the Tile image to the screen.
  * @param {Canvas.context} context
  * @param {image} tilesImage
  * @param {Vector2i} imageOrigin UpperRight corner of selected tile
