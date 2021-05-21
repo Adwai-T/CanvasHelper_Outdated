@@ -1,4 +1,4 @@
-import { Canvas, drawText, Point, Vector2i, Polygon, Line } from "./src/Canvas.js";
+import { Canvas, drawText, Point, Vector2i, Polygon } from "./src/Canvas.js";
 
 console.log("Started");
 
@@ -13,37 +13,38 @@ canvas.canvas.addEventListener("mousemove", (event) => {
   mouse.y = event.clientY - canvasRect.top;
 });
 
+let allVec = [];
 let origin = new Vector2i(250, 250);
 
-const satCollision = function (poly1, poly2) {
-  let v1 = poly1.vertices;
-  let v2 = poly2.vertices;
-}
+let square = new Polygon();
+square.addPoint(new Vector2i(-100, -100));
+square.addPoint(new Vector2i(-100, 75));
+square.addPoint(new Vector2i(75, 100));
+square.addPoint(new Vector2i(150, -70));
+
+let triangle = new Polygon();
+triangle.addPoint(new Vector2i(100, -20));
+triangle.addPoint(new Vector2i(95, -100));
+triangle.addPoint(new Vector2i(170, -75));
+
+square.moveToPoint(origin);
+triangle.moveToPoint(origin);
+
+allVec.forEach((vec) => {
+  vec.reflectX();
+  vec.translate(origin);
+});
 
 let draw = function () {
-  mouse.draw(ctx, 'lightgrey', 3);
-
-  let poly1 = new Polygon();
-  poly1.createPolygonWithNumberOfSides(mouse.x, mouse.y, 100, 5);
-  let poly2 = new Polygon();
-  poly2.createPolygonWithNumberOfSides(origin.x-100, origin.y -100, 60, 5);
-
-  let collision = Polygon.SatCollision(poly1, poly2);
-
-  if(collision) {
-    poly1.draw(ctx, 'yellow', 2);
-    poly2.draw(ctx, 'green', 2);
-  }else {
-    poly1.draw(ctx, 'red', 2);
-    poly2.draw(ctx, 'blue', 2);
-  }
-
+  origin.toPoint().draw(ctx, "black", 2);
+  mouse.draw(ctx, "lightgrey", 3);
+  square.draw(ctx, "red", 2);
+  triangle.draw(ctx, "green", 2);
 };
 
 let deltaTime = 0;
 let lastTimeStamp = 0;
 const FPSCORDS = { x: canvas.width - 50, y: 20 };
-let framecount = 0;
 //---Update
 let update = function (timestamp) {
   deltaTime = timestamp - lastTimeStamp;
@@ -55,6 +56,5 @@ let update = function (timestamp) {
   draw();
   window.requestAnimationFrame(update);
   lastTimeStamp = timestamp;
-  // console.log(framecount++);
 };
 window.requestAnimationFrame(update);

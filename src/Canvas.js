@@ -115,7 +115,7 @@ export class Vector2i {
     this.y = y;
   }
 
-  toPoint(){
+  toPoint() {
     return new Point(this.x, this.y);
   }
 
@@ -254,24 +254,49 @@ export class Vector2i {
   }
 
   getNormal(antiClockwise) {
-    if(antiClockwise){
-      return new Vector2i(-1*this.y, this.x)
+    if (antiClockwise) {
+      return new Vector2i(-1 * this.y, this.x);
     }
-    return new Vector2i(this.y, -1* this.x);
+    return new Vector2i(this.y, -1 * this.x);
   }
 
   translate(vec) {
     this.addVector(vec);
   }
 
+  getTranslated(vec) {
+    return this.getAdditionVector(vec);
+  }
+
   reflectX() {
     this.y = -this.y;
   }
 
+  getReflectX() {
+    return new Vector2i(this.x, -this.y);
+  }
+
   reflectY() {
     this.x = -this.x;
-  } 
+  }
+
+  getReflectY() {
+    return new Vector2i(-this.x, this.y);
+  }
+
+  reflectOrigin() {
+    this.x = -this.x;
+    this.y = -this.y;
+  }
+
+  getReflectOrigin() {
+    return new Vector2i(-this.x, -this.y);
+  }
 }
+
+Vector2i.vectorFromTwoPoints = function (point1, point2) {
+  return new Vector2i(point1.x - point2.x, point1.y - point2.y);
+};
 
 //--- Angle Utility functions
 export function toRadian(angle) {
@@ -283,13 +308,10 @@ export function toDegree(angle) {
 }
 
 //--- Text
-export function drawText(ctx, text, x, y, color, font, align){
-  if(color)
-    ctx.fillStyle = color;
-  if(font)
-    ctx.font = font;
-  if(align)
-    ctx.textAlign = align;
+export function drawText(ctx, text, x, y, color, font, align) {
+  if (color) ctx.fillStyle = color;
+  if (font) ctx.font = font;
+  if (align) ctx.textAlign = align;
   ctx.fillText(text, x, y);
 }
 
@@ -300,28 +322,28 @@ export function drawText(ctx, text, x, y, color, font, align){
  * Has a draw function
  */
 export class Point {
-  constructor(x, y, size,color) {
+  constructor(x, y, size, color) {
     this.x = x;
     this.y = y;
     this.size = 1;
-    if(size) {
+    if (size) {
       this.size = size;
     }
     this.color = "black";
-    if(color) {
+    if (color) {
       this.color = color;
     }
   }
 
   draw(context, color, size) {
-    if(!color) {
+    if (!color) {
       color = this.color;
     }
 
-    if(!size) {
+    if (!size) {
       size = this.size;
     }
-    
+
     context.fillStyle = color;
     if (size > 1) {
       context.beginPath();
@@ -527,9 +549,165 @@ export class Rectangle {
   }
 }
 
-//--
+//--- Polygon
+export class Polygon {
+  constructor() {
+    this.vertices = [];
+  }
 
-//-- Tile Map Utility functions
+  addPoint(vec) {
+    this.vertices.push(vec);
+  }
+
+  removeLastPoint() {
+    this.vertices.pop();
+  }
+
+  getVertices() {
+    return this.vertices;
+  }
+
+  moveToPoint(origin) {
+    this.vertices.forEach((vec) => {
+      vec.reflectX();
+      vec.translate(origin);
+    });
+  }
+
+  createPolygonWithNumberOfSides(centreX, centreY, radius, numPoints) {
+    let angle = (2 * Math.PI) / numPoints;
+    for (let i = 0; i < numPoints; i++) {
+      let x = centreX + radius * Math.sin(i * angle);
+      let y = centreY + radius * Math.cos(i * angle);
+
+      this.vertices.push(new Vector2i(x, y));
+    }
+  }
+
+  getAxes() {
+    let axes = [];
+
+    for (let i = 0; i < this.vertices.length; i++) {
+      let j = (i + 1) % this.vertices.length;
+
+      axes.push(
+        new Vector2i(
+          this.vertices[j].x - this.vertices[i].x,
+          this.vertices[j].y - this.vertices[i].y
+        )
+      );
+    }
+
+    return axes;
+  }
+
+  getNormals() {
+    let normals = [];
+
+    for (let i = 0; i < this.vertices.length; i++) {
+      let j = (i + 1) % this.vertices.length;
+
+      normals.push(
+        new Vector2i(
+          -1 * (this.vertices[j].y - this.vertices[i].y),
+          this.vertices[j].x - this.vertices[i].x
+        ).getNormalized()
+      );
+    }
+
+    return normals;
+  }
+
+  draw(ctx, color, thickness) {
+    for (let i = 0; i < this.vertices.length - 1; i++) {
+      new Line(this.vertices[i], this.vertices[i + 1]).draw(
+        ctx,
+        color,
+        thickness
+      );
+    }
+    new Line(this.vertices[0], this.vertices[this.vertices.length - 1]).draw(
+      ctx,
+      color,
+      thickness
+    );
+  }
+}
+
+Polygon.SatCollision = function (poly1, poly2) {
+  let v1 = poly1.vertices;
+  let v2 = poly2.vertices;
+
+  console.log(v1, v2);
+
+  //Check for Normals of poly1 axes
+  for (let i = 0; i < v1.length; i++) {
+    let j = (i + 1) % v1.length;
+    let normal = new Vector2i(
+      -1 * (v1[j].y - v1[i].y),
+      v1[j].x - v1[i].x
+    ).getNormalized();
+
+    let max1 = -Infinity;
+    let min1 = Infinity;
+    v1.forEach((v) => {
+      let dot = normal.getDotProduct(v);
+      max1 = Math.max(max1, dot);
+      min1 = Math.min(min1, dot);
+    });
+
+    let max2 = -Infinity;
+    let min2 = Infinity;
+    v2.forEach((v) => {
+      let dot = normal.getDotProduct(v);
+      max2 = Math.max(max2, dot);
+      min2 = Math.min(min2, dot);
+    });
+
+    if (!(
+      (min1 < max2 && min1 > min2) ||
+      (min2 < max1 && min2 > min1)
+    )) {
+      return false;
+    }
+  }
+
+  //Check for Normals of poly2 axes
+  for (let i = 0; i < v2.length; i++) {
+    let j = (i + 1) % v2.length;
+    let normal = new Vector2i(
+      -1 * (v2[j].y - v2[i].y),
+      v2[j].x - v2[i].x
+    ).getNormalized();
+
+    let max1 = -Infinity;
+    let min1 = Infinity;
+    v1.forEach((v) => {
+      let dot = normal.getDotProduct(v);
+      max1 = Math.max(max1, dot);
+      min1 = Math.min(min1, dot);
+    });
+
+    let max2 = -Infinity;
+    let min2 = Infinity;
+    v2.forEach((v) => {
+      let dot = normal.getDotProduct(v);
+      max2 = Math.max(max2, dot);
+      min2 = Math.min(min2, dot);
+    });
+
+    if (!(
+      (min1 < max2 && min1 > min2) ||
+      (min2 < max1 && min2 > min1)
+    )) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+//--- Tile Map Utility functions
 export class Tiles {}
 
 /**
