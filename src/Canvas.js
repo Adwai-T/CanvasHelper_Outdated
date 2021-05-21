@@ -552,7 +552,18 @@ export class Rectangle {
 //--- Polygon
 export class Polygon {
   constructor() {
+
     this.vertices = [];
+    /**
+   * Only works if the polygon is created with createPolygonWithNumberOfSides.
+   * Center Value should only be used if necessary.
+   * Use the recalcuateCenter function to update the value of center as it is not update automatically once it is created.
+   */
+    this.center = new Vector2i(0, 0);
+    this.radius = 0;
+    //In radians
+    this.angle = 0;
+    this.color = 'black';
   }
 
   addPoint(vec) {
@@ -575,7 +586,12 @@ export class Polygon {
   }
 
   createPolygonWithNumberOfSides(centreX, centreY, radius, numPoints) {
+
+    this.center = new Vector2i(centreX, centreY);
+    this.radius = radius;
+
     let angle = (2 * Math.PI) / numPoints;
+
     for (let i = 0; i < numPoints; i++) {
       let x = centreX + radius * Math.sin(i * angle);
       let y = centreY + radius * Math.cos(i * angle);
@@ -583,6 +599,37 @@ export class Polygon {
       this.vertices.push(new Vector2i(x, y));
     }
   }
+
+  recalculateVertices() {
+    let angle = (2 * Math.PI) / (this.vertices.length);
+    let newVertices = [];
+    
+    for (let i = 0; i < this.vertices.length; i++) {
+      let x = this.center.x + this.radius * Math.sin(i * angle);
+      let y = this.center.y + this.radius * Math.cos(i * angle);
+
+      newVertices.push(new Vector2i(x, y));
+    }
+
+    this.vertices = newVertices;
+  }
+
+  /**
+   * Only works if the polygon is created with createPolygonWithNumberOfSides.
+   * Also polygon can be translated but not rotated for it to work.
+   */
+  recalculateCenter() {
+    let vertex = this.vertices[this.vertices.length - 1];
+    this.center.x = vertex.x;
+    this.center.y = vertex.y - this.radius;
+  }
+
+  // recalculateVerticesAccordingToAngle(){
+  //   this.vertices.forEach((v, i) => {
+  //     this.vertices[i].x = this.vertices[i].x * Math.cos(this.angle) - this.vertices[i].y * Math.sin(this.angle);
+  //     this.vertices[i].y = this.vertices[i].x * Math.sin(this.angle) - this.vertices[i].y * Math.cos(this.angle);
+  //   });
+  // }
 
   getAxes() {
     let axes = [];
@@ -618,8 +665,21 @@ export class Polygon {
     return normals;
   }
 
-  draw(ctx, color, thickness) {
+  /**
+   * Polygons are drawn based on the vertices array,
+   * and does not take into consideration the center value.
+   */
+  draw(ctx, thickness, color) {
+    if(!color || color == undefined) {
+      color = this.color;
+    }
+
+    if(!thickness || thickness == undefined) {
+      thickness = 1;
+    }
+
     for (let i = 0; i < this.vertices.length - 1; i++) {
+
       new Line(this.vertices[i], this.vertices[i + 1]).draw(
         ctx,
         color,
@@ -634,11 +694,12 @@ export class Polygon {
   }
 }
 
+/**
+ * Returns true if there is a collision.
+ */
 Polygon.SatCollision = function (poly1, poly2) {
   let v1 = poly1.vertices;
   let v2 = poly2.vertices;
-
-  console.log(v1, v2);
 
   //Check for Normals of poly1 axes
   for (let i = 0; i < v1.length; i++) {
@@ -703,8 +764,107 @@ Polygon.SatCollision = function (poly1, poly2) {
       return false;
     }
   }
-
   return true;
+};
+
+Polygon.SatStaticResolution = function (poly1, poly2) {
+  let v1 = poly1.vertices;
+  let v2 = poly2.vertices;
+
+  let overlap1 = Infinity;
+  let overlap2 = Infinity;
+  let overlap = Infinity;
+  
+  //Check for Normals of poly1 axes
+  for (let i = 0; i < v1.length; i++) {
+    let j = (i + 1) % v1.length;
+    let normal = new Vector2i(
+      -1 * (v1[j].y - v1[i].y),
+      v1[j].x - v1[i].x
+    ).getNormalized();
+
+    let max1 = -Infinity;
+    let min1 = Infinity;
+    v1.forEach((v) => {
+      let dot = normal.getDotProduct(v);
+      max1 = Math.max(max1, dot);
+      min1 = Math.min(min1, dot);
+    });
+
+    let max2 = -Infinity;
+    let min2 = Infinity;
+    v2.forEach((v) => {
+      let dot = normal.getDotProduct(v);
+      max2 = Math.max(max2, dot);
+      min2 = Math.min(min2, dot);
+    });
+
+    if (!(
+      (min1 < max2 && min1 > min2) ||
+      (min2 < max1 && min2 > min1)
+    )) {
+      return false;
+    }
+    overlap1 = Math.min(Math.min(max1, max2) - Math.max(min1, min2), overlap1);
+  }
+
+  //Check for Normals of poly2 axes
+  for (let i = 0; i < v2.length; i++) {
+    let j = (i + 1) % v2.length;
+    let normal = new Vector2i(
+      -1 * (v2[j].y - v2[i].y),
+      v2[j].x - v2[i].x
+    ).getNormalized();
+
+    let max1 = -Infinity;
+    let min1 = Infinity;
+    v1.forEach((v) => {
+      let dot = normal.getDotProduct(v);
+      max1 = Math.max(max1, dot);
+      min1 = Math.min(min1, dot);
+    });
+
+    let max2 = -Infinity;
+    let min2 = Infinity;
+    v2.forEach((v) => {
+      let dot = normal.getDotProduct(v);
+      max2 = Math.max(max2, dot);
+      min2 = Math.min(min2, dot);
+    });
+
+    if (!(
+      (min1 < max2 && min1 > min2) ||
+      (min2 < max1 && min2 > min1)
+    )) {
+      return false;
+    }
+
+    overlap2 = Math.min(Math.min(max1, max2) - Math.min(min1, min2), overlap2);
+  }
+
+  /*
+  * Commented section of code can be used to resolve collision by using side,
+  * but it wont work for rotated shapes.
+  */
+
+  overlap = Math.min(overlap1, overlap2);
+  // poly1.recalculateCenter();
+  // poly2.recalculateCenter();
+  // console.log(poly2.center, poly2.vertices[poly2.vertices.length - 1]);
+
+  let transVec = new Vector2i(poly2.center.x - poly1.center.x, poly2.center.y - poly1.center.y);
+  transVec.normalize();
+  transVec.scaleVector(overlap);
+
+  poly1.center.x  = poly1.center.x - transVec.x;
+  poly1.center.y  = poly1.center.y - transVec.y;
+
+  poly1.recalculateVertices();
+
+  // poly1.vertices.forEach((vertex, i) => {
+  //   poly1.vertices[i].subtractVector(transVec);
+  // });
+  return false;
 };
 
 //--- Tile Map Utility functions
