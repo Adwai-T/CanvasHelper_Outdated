@@ -1,4 +1,4 @@
-import { Canvas, drawText, Point, Vector2i, Polygon, Line, getRandomColor, Circle } from "./src/Canvas.js";
+import { Canvas, drawText, Point, Vector2i, Polygon, Line, getRandomColor } from "./src/Canvas.js";
 
 console.log("Started");
 
@@ -15,29 +15,48 @@ canvas.canvas.addEventListener("mousemove", (event) => {
 
 let origin = new Vector2i(250, 250);
 
-let circles = [];
+let poly2 = new Polygon();
+poly2.createPolygonWithNumberOfSides(origin.x-100, origin.y -100, 60, 3);
 
-for(let i = 0; i < 110; i++) {
-  let c = new Vector2i(Math.random()*500, Math.random()*500);
-  let r = Math.random() * 40;
-
-  circles.push(new Circle(c, r, getRandomColor(), false, 1));
+let polygonArr = [];
+for(let i = 0; i < 50; i++) {
+  let offsetX = Math.random() * 450;
+  let offsetY = Math.random() * 450;
+  let radius = Math.random() * 80;
+  let poly = new Polygon();
+  poly.createPolygonWithNumberOfSides(offsetX, offsetY, radius,4);
+  poly.color = getRandomColor();
+  polygonArr.push(poly);
 }
 
 let draw = function () {
   mouse.draw(ctx, 'lightgrey', 3);
 
-  let c = new Circle(mouse, 20, 'blue', false);
+  let poly1 = new Polygon();
+  poly1.createPolygonWithNumberOfSides(mouse.x, mouse.y, 20, 3);
 
-  circles.forEach((c2, i) => {
-    Circle.resolveCollision(c, c2);
-    circles.forEach((c3, j) => {
-      !(i==j) ? Circle.resolveCollision(c2, c3) : 0 ;
+  polygonArr.push(poly1);
+
+  polygonArr.forEach((poly1, i) => {
+    polygonArr.forEach((poly2, j) => {
+      if(i == j) {
+
+      }else {
+        Polygon.SatStaticResolution(poly2, poly1);
+      }
     });
-    c2.draw(ctx);
+
+    // if(poly1.center.x > 550 || poly1.center.y > 550) {
+    //   polygonArr.
+    // }
   });
 
-  c.draw(ctx);
+  polygonArr.pop();
+
+  poly1.draw(ctx, 2,'red');
+  polygonArr.forEach(poly => {
+    poly.draw(ctx);
+  });
 };
 
 let deltaTime = 0;

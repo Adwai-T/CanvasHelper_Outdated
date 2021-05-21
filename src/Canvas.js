@@ -488,6 +488,7 @@ export class Rectangle {
       (vec1.y + vec2.y + vec1.y) / 2
     );
     this.color = "black";
+    this.isSolid = true;
   }
 
   draw(context, color) {
@@ -496,8 +497,10 @@ export class Rectangle {
     } else {
       context.fillStyle = this.color;
     }
-
-    context.fillRect(this.vec.x, this.vec.y, this.width, this.height);
+    if(this.isSolid)
+      context.fillRect(this.vec.x, this.vec.y, this.width, this.height);
+    else 
+      context.strokeRect(this.vec.x, this.vec.y, this.width, this.height);
   }
 
   drawSprite(context, image, vec_startLocation, img_width, img_height) {
@@ -546,6 +549,61 @@ export class Rectangle {
       );
       context.restore();
     }
+  }
+}
+
+//--- Circle
+//context.arc(x,y,r,sAngle,eAngle,counterclockwise);
+export class Circle {
+  constructor(center, radius, color, isSolid, thickness) {
+    this.center = center;
+    this.radius = radius;
+    this.isSolid = typeof(isSolid) === 'boolean' ? isSolid : false;
+    this.thickness =  typeof(thickness)=== 'number' ? isSolid : 1;
+    this.color = typeof(color) === 'string' ? color : 'black';
+  }
+
+  draw(ctx, thickness, color) {
+    color = typeof(color) === 'string' ? color : this.color;
+    thickness = typeof(color) === 'number' ? thickness : this.thickness;
+
+    if(this.isSolid) {
+      ctx.fillStyle = color;
+    }else {
+      ctx.strokeStyle = color;
+    }
+    ctx.beginPath();
+    ctx.arc(this.center.x, this.center.y, this.radius, 0, 2*Math.PI);
+    this.isSolid ? ctx.fill() : ctx.stroke();
+  }
+}
+
+Circle.checkCollision = function(c1, c2) {
+  let minDist = c1.radius + c2.radius;
+  let dist = Math.pow(c1.center.x - c2.center.x, 2) + Math.pow(c1.center.y - c2.center.y, 2);
+  minDist = minDist * minDist;
+  if(minDist > dist) {
+    return true;
+  }else {
+    return false;
+  }
+}
+
+Circle.resolveCollision = function(c1, c2) {
+  let minDist = c1.radius + c2.radius;
+  let dist = Math.pow(c1.center.x - c2.center.x, 2) + Math.pow(c1.center.y - c2.center.y, 2);
+  dist = Math.sqrt(dist);
+  if(minDist > dist) {
+
+    let offset = minDist - dist;
+    let axis = Vector2i.vectorFromTwoPoints(c1.center, c2.center);
+    axis.normalize();
+    axis.scaleVector(offset);
+    
+    c2.center.subtractVector(axis);
+    return;
+  }else {
+    return false;
   }
 }
 
@@ -955,3 +1013,10 @@ Tiles.drawTile = function (
     drawTileSize
   );
 };
+
+//--- Entities help function
+
+//add gravity
+export function addPhysics() {
+
+}

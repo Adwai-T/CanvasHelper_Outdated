@@ -36,10 +36,10 @@ allVec.forEach((vec) => {
 });
 
 let draw = function () {
-  origin.toPoint().draw(ctx, "black", 2);
+  origin.toPoint().draw(ctx, "black", 2 );
   mouse.draw(ctx, "lightgrey", 3);
-  square.draw(ctx, "red", 2);
-  triangle.draw(ctx, "green", 2);
+  square.draw(ctx,  2, "red");
+  triangle.draw(ctx, 2, "green");
 };
 
 let deltaTime = 0;
