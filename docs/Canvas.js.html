@@ -1,4 +1,32 @@
-/**
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Canvas.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Canvas.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
  * Main canvas class, helps create canvas context and draw on it.
  * @param {number} width - Width
  * @param {number} height - Height
@@ -75,7 +103,7 @@ export class Canvas {
 export function getRandomColor() {
   var letters = "0123456789ABCDEF";
   var color = "#";
-  for (var i = 0; i < 6; i++) {
+  for (var i = 0; i &lt; 6; i++) {
     color += letters[Math.floor(Math.random() * 16)];
   }
   return color;
@@ -165,7 +193,7 @@ export class Vector2i {
    * @returns {boolean}
    */
   isEqual(vector) {
-    if (this.x === vector.x && this.y === vector.y) {
+    if (this.x === vector.x &amp;&amp; this.y === vector.y) {
       return true;
     } else return false;
   }
@@ -451,7 +479,7 @@ export class Point {
    */
   isInsideCircle(circle) {
     let dist = Math.pow(this.x - circle.center.x, 2) + Math.pow(this.y - circle.center.y, 2);
-    if(dist <= circle.radius * circle.radius) {
+    if(dist &lt;= circle.radius * circle.radius) {
       return true;
     }else return false;
   }
@@ -469,7 +497,7 @@ Point.joinPointArray = function (context, points, color, thickness) {
     context.strokeStyle = color;
   }
 
-  if (typeof thickness === "number" && thickness > 1) {
+  if (typeof thickness === "number" &amp;&amp; thickness > 1) {
     context.lineWidth = thickness;
   }
 
@@ -477,7 +505,7 @@ Point.joinPointArray = function (context, points, color, thickness) {
     context.beginPath();
     context.moveTo(points[0].x, points[0].y);
 
-    for (let i = 1; i < points.length; i++) {
+    for (let i = 1; i &lt; points.length; i++) {
       context.lineTo(points[i].x, points[i].y);
     }
 
@@ -817,9 +845,9 @@ Circles.circleRectCollision = function (circle, rect) {
   let testY = circle.center.y;
   
   // which edge is closest?
-  if (circle.center.x < rect.vec.x)         testX = rect.vec.x;      // test left edge
+  if (circle.center.x &lt; rect.vec.x)         testX = rect.vec.x;      // test left edge
   else if (circle.center.x > rect.vec.x+rect.width) testX = rect.vec.x+rect.width;   // right edge
-  if (circle.center.y < rect.vec.y)         testY = rect.vec.y;      // top edge
+  if (circle.center.y &lt; rect.vec.y)         testY = rect.vec.y;      // top edge
   else if (circle.center.y > rect.vec.y+rect.height) testY = rect.vec.y+rect.height;   // bottom edge
 
   // get distance from closest edges
@@ -830,7 +858,7 @@ Circles.circleRectCollision = function (circle, rect) {
   let distance = Math.sqrt( (distX*distX) + (distY*distY) );
 
   // if the distance is less than the radius, collision!
-  if (distance <= circle.radius) {
+  if (distance &lt;= circle.radius) {
 
     let separationVec = Vector2i.vectorFromTwoPoints(circle.center, new Vector2i(testX, testY));
     separationVec.normalize();
@@ -927,7 +955,7 @@ export class Polygon {
 
     let angle = (2 * Math.PI) / numPoints;
 
-    for (let i = 0; i < numPoints; i++) {
+    for (let i = 0; i &lt; numPoints; i++) {
       let x = centreX + radius * Math.sin(i * angle);
       let y = centreY + radius * Math.cos(i * angle);
 
@@ -942,7 +970,7 @@ export class Polygon {
     let angle = (2 * Math.PI) / (this.vertices.length);
     let newVertices = [];
     
-    for (let i = 0; i < this.vertices.length; i++) {
+    for (let i = 0; i &lt; this.vertices.length; i++) {
       let x = this.center.x + this.radius * Math.sin(i * angle);
       let y = this.center.y + this.radius * Math.cos(i * angle);
 
@@ -976,7 +1004,7 @@ export class Polygon {
   getAxes() {
     let axes = [];
 
-    for (let i = 0; i < this.vertices.length; i++) {
+    for (let i = 0; i &lt; this.vertices.length; i++) {
       let j = (i + 1) % this.vertices.length;
 
       axes.push(
@@ -997,7 +1025,7 @@ export class Polygon {
   getNormals() {
     let normals = [];
 
-    for (let i = 0; i < this.vertices.length; i++) {
+    for (let i = 0; i &lt; this.vertices.length; i++) {
       let j = (i + 1) % this.vertices.length;
 
       normals.push(
@@ -1027,7 +1055,7 @@ export class Polygon {
       thickness = 1;
     }
 
-    for (let i = 0; i < this.vertices.length - 1; i++) {
+    for (let i = 0; i &lt; this.vertices.length - 1; i++) {
 
       new Line(this.vertices[i], this.vertices[i + 1]).draw(
         ctx,
@@ -1054,7 +1082,7 @@ Polygon.SatCollision = function (poly1, poly2) {
   let v2 = poly2.vertices;
 
   //Check for Normals of poly1 axes
-  for (let i = 0; i < v1.length; i++) {
+  for (let i = 0; i &lt; v1.length; i++) {
     let j = (i + 1) % v1.length;
     let normal = new Vector2i(
       -1 * (v1[j].y - v1[i].y),
@@ -1078,15 +1106,15 @@ Polygon.SatCollision = function (poly1, poly2) {
     });
 
     if (!(
-      (min1 < max2 && min1 > min2) ||
-      (min2 < max1 && min2 > min1)
+      (min1 &lt; max2 &amp;&amp; min1 > min2) ||
+      (min2 &lt; max1 &amp;&amp; min2 > min1)
     )) {
       return false;
     }
   }
 
   //Check for Normals of poly2 axes
-  for (let i = 0; i < v2.length; i++) {
+  for (let i = 0; i &lt; v2.length; i++) {
     let j = (i + 1) % v2.length;
     let normal = new Vector2i(
       -1 * (v2[j].y - v2[i].y),
@@ -1110,8 +1138,8 @@ Polygon.SatCollision = function (poly1, poly2) {
     });
 
     if (!(
-      (min1 < max2 && min1 > min2) ||
-      (min2 < max1 && min2 > min1)
+      (min1 &lt; max2 &amp;&amp; min1 > min2) ||
+      (min2 &lt; max1 &amp;&amp; min2 > min1)
     )) {
       return false;
     }
@@ -1134,7 +1162,7 @@ Polygon.SatStaticResolution = function (poly1, poly2) {
   let overlap = Infinity;
   
   //Check for Normals of poly1 axes
-  for (let i = 0; i < v1.length; i++) {
+  for (let i = 0; i &lt; v1.length; i++) {
     let j = (i + 1) % v1.length;
     let normal = new Vector2i(
       -1 * (v1[j].y - v1[i].y),
@@ -1158,8 +1186,8 @@ Polygon.SatStaticResolution = function (poly1, poly2) {
     });
 
     if (!(
-      (min1 < max2 && min1 > min2) ||
-      (min2 < max1 && min2 > min1)
+      (min1 &lt; max2 &amp;&amp; min1 > min2) ||
+      (min2 &lt; max1 &amp;&amp; min2 > min1)
     )) {
       return false;
     }
@@ -1167,7 +1195,7 @@ Polygon.SatStaticResolution = function (poly1, poly2) {
   }
 
   //Check for Normals of poly2 axes
-  for (let i = 0; i < v2.length; i++) {
+  for (let i = 0; i &lt; v2.length; i++) {
     let j = (i + 1) % v2.length;
     let normal = new Vector2i(
       -1 * (v2[j].y - v2[i].y),
@@ -1191,8 +1219,8 @@ Polygon.SatStaticResolution = function (poly1, poly2) {
     });
 
     if (!(
-      (min1 < max2 && min1 > min2) ||
-      (min2 < max1 && min2 > min1)
+      (min1 &lt; max2 &amp;&amp; min1 > min2) ||
+      (min2 &lt; max1 &amp;&amp; min2 > min1)
     )) {
       return false;
     }
@@ -1394,3 +1422,26 @@ export function moveTowards(vector, towards, dist) {
   direction.scaleVector(dist);
   vector.subtractVector(direction);
 }
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Bullets.html">Bullets</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="Circle.html">Circle</a></li><li><a href="Circles.html">Circles</a></li><li><a href="Line.html">Line</a></li><li><a href="Point.html">Point</a></li><li><a href="Polygon.html">Polygon</a></li><li><a href="Rectangle.html">Rectangle</a></li><li><a href="Tiles.html">Tiles</a></li><li><a href="Vector2i.html">Vector2i</a></li></ul><h3>Global</h3><ul><li><a href="global.html#drawSprite">drawSprite</a></li><li><a href="global.html#getRandomColor">getRandomColor</a></li><li><a href="global.html#loadFile">loadFile</a></li><li><a href="global.html#loadImage">loadImage</a></li><li><a href="global.html#moveTowards">moveTowards</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Mon Mar 14 2022 13:27:03 GMT+0530 (India Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

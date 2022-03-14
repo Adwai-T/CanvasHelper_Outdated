@@ -1,0 +1,23 @@
+{
+  "name": "canvashelper",
+  "version": "1.0.0",
+  "description": "Helper functions for Canvas Element",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "doc": "jsdoc -d docs --configure jsconf.json ./src/Canvas.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Adwai-T/CanvasHelper.git"
+  },
+  "author": "Adwait",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Adwai-T/CanvasHelper/issues"
+  },
+  "homepage": "https://github.com/Adwai-T/CanvasHelper#readme"
+}
