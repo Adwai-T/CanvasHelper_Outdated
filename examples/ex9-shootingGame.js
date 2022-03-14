@@ -16,8 +16,8 @@ import {
 
 console.log("Started");
 
-let ScreenX = 1280;
-let ScreenY = 720;
+let ScreenX = 800;
+let ScreenY = 800;
 
 const canvas = new Canvas(ScreenX, ScreenY, "CanvasDiv", "canvas");
 let ctx = canvas.ctx;
@@ -243,9 +243,10 @@ let draw = function (deltaTime) {
     enemies.forEach(enemy=>{
       enemy.draw(ctx);
     });
-
-    mouse.draw(ctx, "blue", 4);
-};
+    
+    //mouse pointer
+    mouse.draw(ctx, "blue", 5);
+  };
 
 let deltaTime = 0;
 let lastTimeStamp = 0;

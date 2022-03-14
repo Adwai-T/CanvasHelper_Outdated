@@ -357,6 +357,13 @@ export class Point {
   toVector() {
     return new Vector2i(this.x, this.y);
   }
+
+  isInsideCircle(circle) {
+    let dist = Math.pow(this.x - circle.center.x, 2) + Math.pow(this.y - circle.center.y, 2);
+    if(dist <= circle.radius * circle.radius) {
+      return true;
+    }else return false;
+  }
 }
 
 /**
@@ -489,18 +496,29 @@ export class Rectangle {
     );
     this.color = "black";
     this.isSolid = true;
+    this.thickness = 1;
+  }
+
+  toggleFilled(){
+    this.isSolid = !this.isSolid;
+    return this;
   }
 
   draw(context, color) {
     if (typeof color === "string") {
       context.fillStyle = color;
+      context.strokeStyle = color;
     } else {
       context.fillStyle = this.color;
+      context.strokeStyle = color;
+
     }
     if(this.isSolid)
       context.fillRect(this.vec.x, this.vec.y, this.width, this.height);
-    else 
+    else {
+      context.lineWidth = this.thickness ? this.thickness : 1;
       context.strokeRect(this.vec.x, this.vec.y, this.width, this.height);
+    }
   }
 
   drawSprite(context, image, vec_startLocation, img_width, img_height) {
@@ -578,7 +596,9 @@ export class Circle {
   }
 }
 
-Circle.checkCollision = function(c1, c2) {
+export class Circles{};
+
+Circles.checkCollision = function(c1, c2) {
   let minDist = c1.radius + c2.radius;
   let dist = Math.pow(c1.center.x - c2.center.x, 2) + Math.pow(c1.center.y - c2.center.y, 2);
   minDist = minDist * minDist;
@@ -589,19 +609,65 @@ Circle.checkCollision = function(c1, c2) {
   }
 }
 
-Circle.resolveCollision = function(c1, c2) {
+Circles.resolveCollision = function(c1, c2) {
   let minDist = c1.radius + c2.radius;
   let dist = Math.pow(c1.center.x - c2.center.x, 2) + Math.pow(c1.center.y - c2.center.y, 2);
   dist = Math.sqrt(dist);
   if(minDist > dist) {
 
-    let offset = minDist - dist;
+    let offset = (minDist - dist)/2;
     let axis = Vector2i.vectorFromTwoPoints(c1.center, c2.center);
     axis.normalize();
     axis.scaleVector(offset);
-    
+    c1.center.addVector(axis);
     c2.center.subtractVector(axis);
     return;
+  }else {
+    return false;
+  }
+}
+
+/**
+ * Check collision between non rotated Rectangle and Circle
+ */
+// CIRCLE/RECTANGLE
+Circles.circleRectCollision = function (circle, rect) {
+
+  let testX = circle.center.x;
+  let testY = circle.center.y;
+  
+  // which edge is closest?
+  if (circle.center.x < rect.vec.x)         testX = rect.vec.x;      // test left edge
+  else if (circle.center.x > rect.vec.x+rect.width) testX = rect.vec.x+rect.width;   // right edge
+  if (circle.center.y < rect.vec.y)         testY = rect.vec.y;      // top edge
+  else if (circle.center.y > rect.vec.y+rect.height) testY = rect.vec.y+rect.height;   // bottom edge
+
+  // get distance from closest edges
+  let distX = circle.center.x-testX;
+  let distY = circle.center.y-testY;
+
+  // new Point(testX, testY).draw(ctx, 'red', 3); //nearest Point on the rectangle
+  let distance = Math.sqrt( (distX*distX) + (distY*distY) );
+
+  // if the distance is less than the radius, collision!
+  if (distance <= circle.radius) {
+
+    let separationVec = Vector2i.vectorFromTwoPoints(circle.center, new Vector2i(testX, testY));
+    separationVec.normalize();
+    separationVec.scaleVector(circle.radius - distance);
+
+    return separationVec;
+  }
+
+  return false;
+}
+
+Circles.circleRectCollisionResolve = function (circle, rect) {
+  let spvec = Circles.circleRectCollision(circle, rect);
+  if(spvec) {
+    circle.center.x += spvec.x;
+    circle.center.y += spvec.y;
+    return true;
   }else {
     return false;
   }
@@ -912,6 +978,7 @@ Polygon.SatStaticResolution = function (poly1, poly2) {
 
   let transVec = new Vector2i(poly2.center.x - poly1.center.x, poly2.center.y - poly1.center.y);
   transVec.normalize();
+  let directionVector = transVec;
   transVec.scaleVector(overlap);
 
   poly1.center.x  = poly1.center.x - transVec.x;
@@ -922,10 +989,12 @@ Polygon.SatStaticResolution = function (poly1, poly2) {
   // poly1.vertices.forEach((vertex, i) => {
   //   poly1.vertices[i].subtractVector(transVec);
   // });
-  return false;
+  return directionVector;
 };
 
-//--- Tile Map Utility functions
+//--- Tile Map Utility functions ---/
+
+//--- Tiles
 export class Tiles {}
 
 /**
@@ -1014,9 +1083,63 @@ Tiles.drawTile = function (
   );
 };
 
-//--- Entities help function
+//--- Entities help function ---//
 
-//add gravity
-export function addPhysics() {
+//--- Particles
+export let  Particles = {
+  all : []
+};
 
+//add physics data
+Particles.makeParticle = function(...shapes) {
+  // this.all.push(...shapes);
+
+  shapes.forEach(shape => {
+    shape.mass = 1;
+    shape.velocity = new Vector2i(0, 0);
+    shape.acceleration = new Vector2i(0, 0);
+    shape.force = new Vector2i(0, 0);
+  });
+}
+
+Particles.calculate = function (deltatime) {
+
+  this.all.forEach((particle, i) => {
+
+    let accn = new Vector2i(
+      particle.force.x / particle.mass,
+      particle.force.y / particle.mass
+    );
+    particle.velocity.x += accn.x * deltatime;
+    particle.velocity.y += accn.y * deltatime;
+    particle.center.x += particle.velocity.x * deltatime;
+    particle.center.y += particle.velocity.y * deltatime;
+  });
+}
+
+//--- Bullets 
+export class Bullets {
+  constructor(origin, direction) {
+    this.size = 2;
+    this.o = origin;
+    this.d = direction;
+    this.circle = new Circle(this.o, this.size, true);
+    this.scale 
+  }
+
+  next(s) {
+    let dir = new Vector2i(this.d.x, this.d.y);
+    dir.scaleVector(s);
+    this.o.subtractVector(dir);
+    this.circle = new Circle(this.o, this.size, true);
+  }
+}
+
+//--- Helper Functions
+export function moveTowards(vector, towards, dist) {
+  let direction = Vector2i.vectorFromTwoPoints(vector, towards);
+  direction.normalize();
+  direction.scaleVector(dist);
+
+  vector.subtractVector(direction);
 }

@@ -1,4 +1,4 @@
-import { Canvas, drawText, Point, Vector2i, Polygon, Line, getRandomColor, Circle, Particles } from "./src/Canvas.js";
+import { Canvas, drawText, Point, Vector2i, Polygon, Line, getRandomColor, Circle, Particles, Tiles, Rectangle, Circles } from "./src/Canvas.js";
 
 console.log("Started");
 
@@ -13,6 +13,7 @@ canvas.canvas.addEventListener("mousemove", (event) => {
   mouse.y = event.clientY - canvasRect.top;
 });
 
+//--- Input Events
 let mouseDown = false;
 let mouseUp = true;
 let mouseRightDown = false;
@@ -54,54 +55,65 @@ canvas.canvas.addEventListener("keyup", (event) => {
 
 let origin = new Vector2i(250, 250);
 
-let circles = [];
+// let tileSize = 20;
+// let tileSizeVector = new Vector2i(tileSize, tileSize);
+// let tiles = Tiles.generateTileArray(25, 25, tileSize);
 
-for(let i = 0; i < 100; i++) {
-  let c = new Vector2i(Math.random()*500, Math.random()*500);
-  let r = Math.random() * 10 + 30;
-  let circle = new Circle(c, r, getRandomColor(), false, 1)
-  Particles.makeParticle(circle);
-  circles.push(circle);
-}
+const startPoint = new Point(10, 10);
+const endPoint = new Point(100, 200);
+let actor = new Circle(new Vector2i(startPoint.x, startPoint.y), 10, 'blue', false, 2);
+actor.speed = 3;
 
-const calculate = function(circle, deltaTime) {
-  
-  circle.velocity.x += circle.acceleration.x * deltaTime;
-  circle.velocity.y += circle.acceleration.y * deltaTime;
+let c1 = new Circle(mouse, 50, 'violet', false, 1);
+let r1 = new Rectangle(new Vector2i(100, 250), new Vector2i(150, 100)).toggleFilled();
+let r2 = new Rectangle(new Vector2i(10, 100), new Vector2i(100, 25)).toggleFilled();
 
-  circle.center.x += circle.velocity.x * deltaTime;
-  circle.center.y += circle.velocity.y * deltaTime;
+let obstacleCircle = [];
+let obstacleSquare = [];
+
+let calculate = function(time) {
+
+  if(actor.center.x >= endPoint.x && actor.center.x <= endPoint.x + actor.speed) {
+    actor.speed = 0;
+    return;
+  }
+
+  let direction = Vector2i.vectorFromTwoPoints(actor.center, endPoint);
+  direction.normalize();
+  direction.scaleVector(actor.speed);
+
+  actor.center.x -= direction.x;
+  actor.center.y -= direction.y;
+
+  //collision
+  let separationVec = Circles.circleRectCollisionResolve(c1, r1);
+  if(separationVec) {
+    r1.color = 'red';
+  }else{
+    r1.color = 'blue';
+  }
+  Circles.circleRectCollisionResolve(actor, r2)
 }
 
 let draw = function (deltaTime) {
   mouse.draw(ctx, 'lightgrey', 3);
 
-  circles.forEach((c2, i) => {
-    
-    if(mouse.isInsideCircle(c2)) {
-      if(mouseDown) {
-        c2.center.x = mouse.x;
-        c2.center.y = mouse.y;
-      }
-      if(Q) {
-        c2.acceleration = Vector2i.vectorFromTwoPoints(mouse, c2.center);
-        c2.acceleration.normalize();
-        c2.acceleration.scaleVector(150);
-      }
-    }
-    calculate(c2, deltaTime);
+  // tiles.forEach(tile => {
+  //   new Rectangle(tile, tileSizeVector).toggleFilled().draw(ctx);
+  // });
+  calculate(deltaTime);
 
-    circles.forEach((c3, j) => {
-      !(i==j) ? Circles.resolveCollision(c2, c3) : 0 ;
-    });
-    c2.draw(ctx);
-  });
-};
+  startPoint.draw(ctx, 'green', 5);
+  endPoint.draw(ctx, 'red', 5);
+  actor.draw(ctx);
+  r1.draw(ctx);
+  c1.draw(ctx);
+  r2.draw(ctx);
+  };
 
 let deltaTime = 0;
 let lastTimeStamp = 0;
 const FPSCORDS = { x: canvas.width - 50, y: 20 };
-let framecount = 0;
 //---Update
 let update = function (timestamp) {
   deltaTime = timestamp - lastTimeStamp;
