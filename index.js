@@ -132,16 +132,22 @@ let enemies = [];
 let previousFireTime = 0;
 
 //Add ememies
-let numberOfEnemies = 500;
-for(let i = 0; i < numberOfEnemies; i++) {
-  enemies.push(new Circle(new Vector2i(Math.random() * ScreenX, Math.random() * ScreenY), 6, 'red', true));
+const addEnemies = function (num, color) {
+  for(let i = 0; i < num; i++) {
+    enemies.push(new Circle(new Vector2i(Math.random() * ScreenX, Math.random() * ScreenY), 6, color, true));
+  }
 }
+addEnemies(500, getRandomColor());
+
 
 //Add Walls
-let numberOfWalls = 50;
-for(let i = 0; i < numberOfWalls; i++) {
-  walls.push(new Rectangle(new Vector2i(Math.random()*ScreenX, Math.random()*ScreenY), new Vector2i(Math.random()*50, Math.random()*50)))
+const addWalls = function(num) {
+  for(let i = 0; i < num; i++) {
+    walls.push(new Rectangle(new Vector2i(Math.random()*ScreenX, Math.random()*ScreenY), new Vector2i(Math.random()*50, Math.random()*50)))
+  }
 }
+addWalls(100);
+
 
 //Calculate next frames
 let calculate = function (time) {
@@ -252,6 +258,13 @@ let lastTimeStamp = 0;
 const FPSCORDS = { x: canvas.width - 50, y: 20 };
 //---Update
 let update = function (timestamp) {
+
+  if(enemies.length === 0) {
+    walls = [];
+    addWalls(100);
+    addEnemies(100, getRandomColor());
+  }
+
   deltaTime = timestamp - lastTimeStamp;
   canvas.clearCanvas();
   let fps = Math.round(1000 / deltaTime);
