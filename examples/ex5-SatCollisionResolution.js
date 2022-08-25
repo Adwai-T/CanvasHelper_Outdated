@@ -1,4 +1,10 @@
-import { Canvas, drawText, Point, Vector2i, Polygon, Line, getRandomColor } from "./src/Canvas.js";
+/*
+
+  SAT collision resolution example with triangle and squares.
+
+*/
+
+import { Canvas, drawText, Point, Vector2i, Polygon, Line, getRandomColor } from "../src/Canvas.js";
 
 console.log("Started");
 

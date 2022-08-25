@@ -1,3 +1,13 @@
+/*
+
+  The Separating Axis Theorem (SAT for short) essentially states
+  if you are able to draw a line to separate two polygons,
+  then they do not collide.
+
+  This is visualization of sat.
+
+*/
+
 import {
   Canvas,
   drawText,
@@ -5,7 +15,7 @@ import {
   Vector2i,
   Polygon,
   Line,
-} from "./src/Canvas.js";
+} from "../src/Canvas.js";
 
 console.log("Started");
 

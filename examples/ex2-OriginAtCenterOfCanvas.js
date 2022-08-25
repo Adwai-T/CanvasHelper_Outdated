@@ -1,4 +1,4 @@
-import { Canvas, drawText, Point, Vector2i, Polygon } from "./src/Canvas.js";
+import { Canvas, drawText, Point, Vector2i, Polygon } from "../src/Canvas.js";
 
 console.log("Started");
 

@@ -8,7 +8,7 @@ import {
   getRandomColor,
   Circle,
   Particles,
-} from "./src/Canvas.js";
+} from "../src/Canvas.js";
 
 console.log("Started");
 

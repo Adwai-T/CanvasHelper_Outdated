@@ -3,16 +3,11 @@ import {
   drawText,
   Point,
   Vector2i,
-  Polygon,
-  Line,
-  getRandomColor,
   Circle,
-  Particles,
-  Tiles,
   Rectangle,
   Circles,
   moveTowards,
-} from "./src/Canvas.js";
+} from "../src/Canvas.js";
 
 console.log("Started");
 
@@ -99,15 +94,9 @@ canvas.canvas.addEventListener("keyup", (event) => {
 
 let origin = new Vector2i(250, 250);
 
-let actor = new Circle(
-  new Vector2i(origin.x, origin.y),
-  10,
-  "blue",
-  false,
-  2
-);
+let actor = new Circle(new Vector2i(origin.x, origin.y), 10, "blue", false, 2);
 actor.speed = 3;
-let enemySpeed =0.02;
+let enemySpeed = 0.02;
 
 class bullet {
   constructor(origin, direction) {
@@ -115,7 +104,7 @@ class bullet {
     this.o = origin;
     this.d = direction;
     this.circle = new Circle(this.o, this.size, true);
-    this.scale 
+    this.scale;
   }
 
   next(s) {
@@ -133,14 +122,26 @@ let previousFireTime = 0;
 
 //Add ememies
 let numberOfEnemies = 500;
-for(let i = 0; i < numberOfEnemies; i++) {
-  enemies.push(new Circle(new Vector2i(Math.random() * ScreenX, Math.random() * ScreenY), 6, 'red', true));
+for (let i = 0; i < numberOfEnemies; i++) {
+  enemies.push(
+    new Circle(
+      new Vector2i(Math.random() * ScreenX, Math.random() * ScreenY),
+      6,
+      "red",
+      true
+    )
+  );
 }
 
 //Add Walls
 let numberOfWalls = 50;
-for(let i = 0; i < numberOfWalls; i++) {
-  walls.push(new Rectangle(new Vector2i(Math.random()*ScreenX, Math.random()*ScreenY), new Vector2i(Math.random()*50, Math.random()*50)))
+for (let i = 0; i < numberOfWalls; i++) {
+  walls.push(
+    new Rectangle(
+      new Vector2i(Math.random() * ScreenX, Math.random() * ScreenY),
+      new Vector2i(Math.random() * 50, Math.random() * 50)
+    )
+  );
 }
 
 //Calculate next frames
@@ -189,19 +190,19 @@ let calculate = function (time) {
     ) {
     } else {
       bullet.next(5);
-      for(let i = 0; i < walls.length; i++) {
-        if(Circles.circleRectCollision(bullet.circle, walls[i])) {
+      for (let i = 0; i < walls.length; i++) {
+        if (Circles.circleRectCollision(bullet.circle, walls[i])) {
           return;
         }
       }
-      for(let i = 0; i < enemies.length; i++) {
-        if(Circles.checkCollision(bullet.circle, enemies[i])) {
+      for (let i = 0; i < enemies.length; i++) {
+        if (Circles.checkCollision(bullet.circle, enemies[i])) {
           enemies = enemies.filter((enemy, j) => {
-            if(i === j) return;
+            if (i === j) return;
             return enemy;
           });
           return;
-        } 
+        }
       }
 
       bullet.circle.draw(ctx);
@@ -210,20 +211,19 @@ let calculate = function (time) {
   });
 
   //Ememy Enemy Collision
-  for(let i = 0; i < enemies.length; i++){
-    for(let j = 0; j < enemies.length; j++) {
-      if(i == j) {
-        
-      }else{
+  for (let i = 0; i < enemies.length; i++) {
+    for (let j = 0; j < enemies.length; j++) {
+      if (i == j) {
+      } else {
         Circles.resolveCollision(enemies[i], enemies[j]);
       }
     }
   }
-  
+
   //Wall Enemy and Actor collision
-  walls.forEach(wall => {
+  walls.forEach((wall) => {
     Circles.circleRectCollisionResolve(actor, wall);
-    enemies.forEach(enemy => {
+    enemies.forEach((enemy) => {
       moveTowards(enemy.center, actor.center, enemySpeed);
       Circles.circleRectCollisionResolve(enemy, wall);
     });
@@ -231,22 +231,21 @@ let calculate = function (time) {
 };
 
 let draw = function (deltaTime) {
-  
   // tiles.forEach(tile => {
-    //   new Rectangle(tile, tileSizeVector).toggleFilled().draw(ctx);
-    // });
-    calculate(deltaTime);
-    actor.draw(ctx);
-    walls.forEach(wall => {
-      wall.draw(ctx, 'pink');
-    });
-    enemies.forEach(enemy=>{
-      enemy.draw(ctx);
-    });
-    
-    //mouse pointer
-    mouse.draw(ctx, "blue", 5);
-  };
+  //   new Rectangle(tile, tileSizeVector).toggleFilled().draw(ctx);
+  // });
+  calculate(deltaTime);
+  actor.draw(ctx);
+  walls.forEach((wall) => {
+    wall.draw(ctx, "pink");
+  });
+  enemies.forEach((enemy) => {
+    enemy.draw(ctx);
+  });
+
+  //mouse pointer
+  mouse.draw(ctx, "blue", 5);
+};
 
 let deltaTime = 0;
 let lastTimeStamp = 0;

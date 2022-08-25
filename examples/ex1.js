@@ -1,6 +1,6 @@
-import { Canvas, getRandomColor, Line, Point, Vector2i } from "./src/Canvas.js";
+import { Canvas, Line, Point, Vector2i } from "../src/Canvas.js";
 
-console.log("Started");
+console.log("Started"); 
 
 let canvas = new Canvas(500, 500, 'CanvasDiv', 'canvas');
 let ctx = canvas.ctx;
