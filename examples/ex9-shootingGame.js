@@ -9,6 +9,8 @@ import {
   moveTowards,
 } from "../src/Canvas.js";
 
+/* DOES NOT WORK ANY MORE */
+
 console.log("Started");
 
 let ScreenX = 800;
