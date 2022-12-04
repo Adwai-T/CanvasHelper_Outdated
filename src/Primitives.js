@@ -102,9 +102,17 @@ export class Vector2i {
    * The parameter to pass is a scalar value not a vector.
    * @param {number} value - Scalar value to be multiplied.
    */
-  scaleVector(value) {
+  scale(value) {
     this.x *= value;
     this.y *= value;
+  }
+
+  scaleX(value) {
+    this.x *= value;
+  }
+
+  scaleY(value) {
+    this.x *= value;
   }
 
   getScaledVector(value) {
@@ -159,17 +167,17 @@ export class Vector2i {
   getInnerProduct(vector) {
     return this.x * vector.x + this.y * vector.y;
   }
+  
   //The scalar value returned =>
   //a.b = |a||b|cos(theta) =>
   //theta represents the angle between the two given vectors
-
-  getAngleBetweenVector(vector, inRadian) {
+  getAngleBetweenVector(vector, inDegrees) {
     let angle = Math.acos(
       this.getDotProduct(vector) / (this.getMagnitude * vector.getMagnitude)
     );
 
-    if (inRadian) return angle;
-    else return toDegree(angle);
+    if (!inDegrees) return angle;
+    else return (new Angle(angle, true).getDegree());
   }
 
   getProjectionVector(vector) {
@@ -180,7 +188,7 @@ export class Vector2i {
   getReflectionVector(normal) {
     let projectVector = this.getProjectionVector(normal);
     console.log(projectVector);
-    projectVector.scaleVector(2);
+    projectVector.scale(2);
     console.log(projectVector);
     // return this.getSubtractionVector(projectVector);
     return projectVector.getSubtractionVector(this);
@@ -225,6 +233,10 @@ export class Vector2i {
   getReflectOrigin() {
     return new Vector2i(-this.x, -this.y);
   }
+
+  getNewVector() {
+    return new Vector2i(this.x, this.y);
+  }
 }
 
 Vector2i.vectorFromTwoPoints = function (point1, point2) {
@@ -232,11 +244,21 @@ Vector2i.vectorFromTwoPoints = function (point1, point2) {
 };
 
 export class Angle {
-  toRadian(angle) {
-    return angle * 0.0174533;
+  _angle;
+  _isRadian;
+  constructor(angle, isRadian) {
+    this._angle = angle;
+    this._isRadian = isRadian;
   }
-  toDegree(angle) {
-    return angle * 57.295754;
+  getRadian() {
+    if(this._isRadian) {
+      return this._angle;
+    }else return this._angle * 0.0174533;
+  }
+  getDegree() {
+    if(this._isRadian) {
+      return this._angle * 57.295754;
+    }else return this._angle;
   }
 }
 
@@ -551,8 +573,7 @@ export class Rectangle {
     image,
     angle,
     vec_startLocation,
-    img_width,
-    img_height
+    imgDimensions
   ) {
     if (image) {
       context.save();
@@ -567,8 +588,8 @@ export class Rectangle {
         image,
         vec_startLocation.x,
         vec_startLocation.y,
-        img_width,
-        img_height,
+        imgDimensions.x,
+        imgDimensions.y,
         -this.width / 2,
         -this.height / 2,
         this.width,
@@ -657,7 +678,7 @@ Circles.resolveCollision = function (c1, c2) {
     let offset = (minDist - dist) / 2;
     let axis = Vector2i.vectorFromTwoPoints(c1.center, c2.center);
     axis.normalize();
-    axis.scaleVector(offset);
+    axis.scale(offset);
     c1.center.addVector(axis);
     c2.center.subtractVector(axis);
     return true;
@@ -699,7 +720,7 @@ Circles.circleRectCollision = function (circle, rect) {
       new Vector2i(testX, testY)
     );
     separationVec.normalize();
-    separationVec.scaleVector(circle.radius - distance);
+    separationVec.scale(circle.radius - distance);
 
     return separationVec;
   }
@@ -1068,7 +1089,7 @@ Polygons.SatStaticResolution = function (poly1, poly2) {
   );
   transVec.normalize();
   let directionVector = transVec;
-  transVec.scaleVector(overlap);
+  transVec.scale(overlap);
 
   poly1.center.x = poly1.center.x - transVec.x;
   poly1.center.y = poly1.center.y - transVec.y;

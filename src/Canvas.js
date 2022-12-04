@@ -61,11 +61,24 @@ export class Canvas {
     this.canvas.style = style;
   }
 
+  _setCanvasOriginAtCenter(primitive) {
+    this.ctx.save();
+    this.ctx.translate(this.width/2, this.height/2);
+    primitive.draw(this.ctx);
+    this.ctx.restore();
+  }
+
   /**
    * Clear the context of the Canvas Element
    */
   clearCanvas() {
     this.ctx.clearRect(0, 0, this.width, this.height);
+  }
+
+  clearCanvasWithColor(color) {
+    this.ctx.clearRect(0, 0, this.width, this.height);
+    this.ctx.fillStyle = color;
+    this.ctx.fillRect(0, 0, this.width, this.height);
   }
 }
 

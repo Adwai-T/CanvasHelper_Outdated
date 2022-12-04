@@ -9,7 +9,7 @@ import {
   moveTowards,
 } from "../src/Canvas.js";
 
-/* DOES NOT WORK ANY MORE */
+/* ----- DOES NOT WORK ANY MORE --------- */
 
 console.log("Started");
 

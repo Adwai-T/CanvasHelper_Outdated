@@ -1,3 +1,5 @@
+import { Point, Rectangle, Vector2i } from "./Primitives.js";
+
 /**
  * Load and return Image
  * @param {string} source
@@ -30,7 +32,55 @@ export function loadFile(src) {
 }
 
 /**
- *
+ * Draw Image at position
+ * @param {Context} context Canvas Context 2D
+ * @param {Image} image Loaded Image reference
+ * @param {Vector2i} position Origin Position, Upper right corner
+ */
+export function drawImage(context, image, position) {
+  if (image && context) {
+    context.drawImage(image, position.x, position.y);
+  }
+}
+
+function _drawImageAndBoundRect(context, image, position) {
+  new Rectangle(position, new Vector2i(image.width, image.height)).draw(
+    context,
+    "red"
+  );
+  drawImage(context, image, position);
+}
+
+/**
+ * Draw a rotated image to canvas.
+ * @param {Context} context Canvas Context
+ * @param {Image} image Loaded Image reference
+ * @param {Vector2i} position Position of upper right corner of image
+ * @param {Angle} angle Angle in Radian
+ */
+export function rotateAndDrawImage(context, image, position, angle) {
+  if (image && context) {
+    context.save();
+    let imageCenter = new Vector2i(
+      position.x + image.width / 2,
+      position.y + image.height / 2
+    );
+    context.translate(imageCenter.x, imageCenter.y);
+
+    let center = new Point(0, 0, 5, "red");
+    center.draw(context);
+    context.rotate(angle);
+    drawImage(
+      context,
+      image,
+      new Vector2i(-image.width / 2, -image.height / 2)
+    );
+    context.restore();
+  }
+}
+
+/**
+ * Draw Sprite
  * @param { HTMLCanvasElement.context } context -
  * @param { ImageData } image - Sprite Sheet Full Image
  * @param { Rectangle } rect_ImageSource - Rectange representing required sprite image

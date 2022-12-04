@@ -1,5 +1,7 @@
 //--- Entities help function ---//
 
+import { Vector2i } from "./Primitives.js";
+
 //--- Particles
 export let Particles = {
   all: [],
@@ -55,18 +57,4 @@ export class Bullets {
     this.o.subtractVector(dir);
     this.circle = new Circle(this.o, this.size, true);
   }
-}
-
-//--- Helper Functions
-/**
- * Movre the given vector in the given direction
- * @param {Vector2i} vector - Vector to be moved.
- * @param {Vector2i} towards - Nomralized vector representing the direction the vector needs to be moved.
- * @param {number} dist - Distance by which the given vector needs to be moved.
- */
-export function moveTowards(vector, towards, dist) {
-  let direction = Vector2i.vectorFromTwoPoints(vector, towards);
-  direction.normalize();
-  direction.scaleVector(dist);
-  vector.subtractVector(direction);
 }
